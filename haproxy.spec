@@ -8,7 +8,7 @@
 
 Name:           haproxy
 Version:        2.0.7
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
 License:        GPLv2+
@@ -55,7 +55,7 @@ regparm_opts=
 regparm_opts="USE_REGPARM=1"
 %endif
 
-%{__make} %{?_smp_mflags} CPU="generic" TARGET="linux-glibc" USE_OPENSSL=1 USE_PCRE2=1 USE_ZLIB=1 USE_LUA=1 USE_CRYPT_H=1 USE_SYSTEMD=1 USE_LINUX_TPROXY=1 USE_GETADDRINFO=1 ${regparm_opts} ADDINC="%{optflags}" ADDLIB="%{__global_ldflags}"
+%{__make} %{?_smp_mflags} CPU="generic" TARGET="linux-glibc" USE_OPENSSL=1 USE_PCRE2=1 USE_ZLIB=1 USE_LUA=1 USE_CRYPT_H=1 USE_SYSTEMD=1 USE_LINUX_TPROXY=1 USE_GETADDRINFO=1 ${regparm_opts} ADDINC="%{optflags}" ADDLIB="%{__global_ldflags}" EXTRA_OBJS="contrib/prometheus-exporter/service-prometheus.o"
 
 pushd contrib/halog
 %{__make} ${halog} OPTIMIZE="%{optflags} %{build_ldflags}"
@@ -132,6 +132,9 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
+* Mon Oct 21 2019 Ryan O'Hara <rohara@redhat.com> - 2.0.7-2
+- Build with Prometheus exporter service (#1755839)
+
 * Mon Oct 21 2019 Ryan O'Hara <rohara@redhat.com> - 2.0.7-1
 - Update to 2.0.7 (#1742544)
 
