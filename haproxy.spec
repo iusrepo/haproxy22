@@ -7,8 +7,8 @@
 %global _hardened_build 1
 
 Name:           haproxy
-Version:        2.0.7
-Release:        2%{?dist}
+Version:        2.0.8
+Release:        1%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
 License:        GPLv2+
@@ -132,6 +132,9 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
+* Wed Nov 06 2019 Ryan O'Hara <rohara@redhat.com> - 2.0.8-1
+- Update to 2.0.8 (#1764483)
+
 * Mon Oct 21 2019 Ryan O'Hara <rohara@redhat.com> - 2.0.7-2
 - Build with Prometheus exporter service (#1755839)
 
