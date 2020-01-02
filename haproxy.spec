@@ -132,7 +132,7 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
-* Thu Jan 02 2019 Ryan O'Hara <rohara@redhat.com> - 2.1.2-1
+* Thu Jan 02 2020 Ryan O'Hara <rohara@redhat.com> - 2.1.2-1
 - Update to 2.1.2 (#1782472)
 
 * Mon Nov 25 2019 Ryan O'Hara <rohara@redhat.com> - 2.0.10-1
