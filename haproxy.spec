@@ -8,7 +8,7 @@
 
 Name:           haproxy
 Version:        2.1.2
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
 License:        GPLv2+
@@ -132,6 +132,9 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
+* Wed Jan 29 2020 Fedora Release Engineering <releng@fedoraproject.org> - 2.1.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
+
 * Thu Jan 02 2020 Ryan O'Hara <rohara@redhat.com> - 2.1.2-1
 - Update to 2.1.2 (#1782472)
 
