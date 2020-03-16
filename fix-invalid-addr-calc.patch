@@ -1,0 +1,118 @@
+From 3285ced5cbec5d8a0c3464f1762d34439280f8eb Mon Sep 17 00:00:00 2001
+From: Willy Tarreau <w@1wt.eu>
+Date: Wed, 11 Mar 2020 11:54:04 +0100
+Subject: [PATCH] BUG/MAJOR: list: fix invalid element address calculation
+
+Ryan O'Hara reported that haproxy breaks on fedora-32 using gcc-10
+(pre-release). It turns out that constructs such as:
+
+    while (item != head) {
+         item = LIST_ELEM(item.n);
+    }
+
+loop forever, never matching <item> to <head> despite a printf there
+showing them equal. In practice the problem is that the LIST_ELEM()
+macro is wrong, it assigns the subtract of two pointers (an integer)
+to another pointer through a cast to its pointer type. And GCC 10 now
+considers that this cannot match a pointer and silently optimizes the
+comparison away. A tested workaround for this is to build with
+-fno-tree-pta. Note that older gcc versions even with -ftree-pta do
+not exhibit this rather surprizing behavior.
+
+This patch changes the test to instead cast the null-based address to
+an int to get the offset and subtract it from the pointer, and this
+time it works. There were just a few places to adjust. Ideally
+offsetof() should be used but the LIST_ELEM() API doesn't make this
+trivial as it's commonly called with a typeof(ptr) and not typeof(ptr*)
+thus it would require to completely change the whole API, which is not
+something workable in the short term, especially for a backport.
+
+With this change, the emitted code is subtly different even on older
+versions. A code size reduction of ~600 bytes and a total executable
+size reduction of ~1kB are expected to be observed and should not be
+taken as an anomaly. Typically this loop in dequeue_proxy_listeners() :
+
+   	while ((listener = MT_LIST_POP(...)))
+
+used to produce this code where the comparison is performed on RAX
+while the new offset is assigned to RDI even though both are always
+identical:
+
+  53ded8:       48 8d 78 c0             lea    -0x40(%rax),%rdi
+  53dedc:       48 83 f8 40             cmp    $0x40,%rax
+  53dee0:       74 39                   je     53df1b <dequeue_proxy_listeners+0xab>
+
+and now produces this one which is slightly more efficient as the
+same register is used for both purposes:
+
+  53dd08:       48 83 ef 40             sub    $0x40,%rdi
+  53dd0c:       74 2d                   je     53dd3b <dequeue_proxy_listeners+0x9b>
+
+Similarly, retrieving the channel from a stream_interface using si_ic()
+and si_oc() used to cause this (stream-int in rdi):
+
+    1cb7:       c7 47 1c 00 02 00 00    movl   $0x200,0x1c(%rdi)
+    1cbe:       f6 47 04 10             testb  $0x10,0x4(%rdi)
+    1cc2:       74 1c                   je     1ce0 <si_report_error+0x30>
+    1cc4:       48 81 ef 00 03 00 00    sub    $0x300,%rdi
+    1ccb:       81 4f 10 00 08 00 00    orl    $0x800,0x10(%rdi)
+
+and now causes this:
+
+    1cb7:       c7 47 1c 00 02 00 00    movl   $0x200,0x1c(%rdi)
+    1cbe:       f6 47 04 10             testb  $0x10,0x4(%rdi)
+    1cc2:       74 1c                   je     1ce0 <si_report_error+0x30>
+    1cc4:       81 8f 10 fd ff ff 00    orl    $0x800,-0x2f0(%rdi)
+
+There is extremely little chance that this fix wakes up a dormant bug as
+the emitted code effectively does what the source code intends.
+
+This must be backported to all supported branches (dropping MT_LIST_ELEM
+and the spoa_example parts as needed), since the bug is subtle and may
+not always be visible even when compiling with gcc-10.
+
+(cherry picked from commit 855796bdc8b1bc2ebcc697ca99fb304bc6e2abe9)
+Signed-off-by: Willy Tarreau <w@1wt.eu>
+---
+ contrib/spoa_example/include/mini-clist.h | 2 +-
+ include/common/mini-clist.h               | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/contrib/spoa_example/include/mini-clist.h b/contrib/spoa_example/include/mini-clist.h
+index a89255c46..d009704cc 100644
+--- a/contrib/spoa_example/include/mini-clist.h
++++ b/contrib/spoa_example/include/mini-clist.h
+@@ -44,7 +44,7 @@ struct list {
+  * since it's used only once.
+  * Example: LIST_ELEM(cur_node->args.next, struct node *, args)
+  */
+-#define LIST_ELEM(lh, pt, el) ((pt)(((void *)(lh)) - ((void *)&((pt)NULL)->el)))
++#define LIST_ELEM(lh, pt, el) ((pt)(((const char *)(lh)) - ((size_t)&((pt)NULL)->el)))
+ 
+ /* checks if the list head <lh> is empty or not */
+ #define LIST_ISEMPTY(lh) ((lh)->n == (lh))
+diff --git a/include/common/mini-clist.h b/include/common/mini-clist.h
+index e29451148..01bd0b695 100644
+--- a/include/common/mini-clist.h
++++ b/include/common/mini-clist.h
+@@ -137,7 +137,7 @@ struct cond_wordlist {
+  * since it's used only once.
+  * Example: LIST_ELEM(cur_node->args.next, struct node *, args)
+  */
+-#define LIST_ELEM(lh, pt, el) ((pt)(((void *)(lh)) - ((void *)&((pt)NULL)->el)))
++#define LIST_ELEM(lh, pt, el) ((pt)(((const char *)(lh)) - ((size_t)&((pt)NULL)->el)))
+ 
+ /* checks if the list head <lh> is empty or not */
+ #define LIST_ISEMPTY(lh) ((lh)->n == (lh))
+@@ -463,7 +463,7 @@ struct cond_wordlist {
+  * since it's used only once.
+  * Example: MT_LIST_ELEM(cur_node->args.next, struct node *, args)
+  */
+-#define MT_LIST_ELEM(lh, pt, el) ((pt)(((void *)(lh)) - ((void *)&((pt)NULL)->el)))
++#define MT_LIST_ELEM(lh, pt, el) ((pt)(((const char *)(lh)) - ((size_t)&((pt)NULL)->el)))
+ 
+ /* checks if the list head <lh> is empty or not */
+ #define MT_LIST_ISEMPTY(lh) ((lh)->next == (lh))
+-- 
+2.24.1
+
