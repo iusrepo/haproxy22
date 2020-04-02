@@ -7,8 +7,8 @@
 %global _hardened_build 1
 
 Name:           haproxy
-Version:        2.1.3
-Release:        2%{?dist}
+Version:        2.1.4
+Release:        1%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
 License:        GPLv2+
@@ -20,8 +20,6 @@ Source2:        %{name}.cfg
 Source3:        %{name}.logrotate
 Source4:        %{name}.sysconfig
 Source5:        halog.1
-
-Patch1:	fix-invalid-addr-calc.patch
 
 BuildRequires:  gcc
 BuildRequires:  lua-devel
@@ -50,7 +48,6 @@ availability environments. Indeed, it can:
 
 %prep
 %setup -q
-%patch1 -p1
 
 %build
 regparm_opts=
@@ -135,6 +132,9 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
+* Thu Apr 02 2020 Ryan O'Hara <rohara@redhat.com> - 2.1.4-1
+- Update to 2.1.4 (CVE-2010-11100, #1820200)
+
 * Mon Mar 16 2020 Ryan O'Hara <rohara@redhat.com> - 2.1.3-2
 - Fix invalid element address calculation (#1801109)
 
