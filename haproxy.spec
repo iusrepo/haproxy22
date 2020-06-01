@@ -7,7 +7,7 @@
 %global _hardened_build 1
 
 Name:           haproxy
-Version:        2.1.4
+Version:        2.1.5
 Release:        1%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
@@ -132,6 +132,9 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
+* Mon Jun 01 2020 Ryan O'Hara <rohara@redhat.com> - 2.1.5-1
+- Update to 2.1.5 (#1841837)
+
 * Thu Apr 02 2020 Ryan O'Hara <rohara@redhat.com> - 2.1.4-1
 - Update to 2.1.4 (CVE-2010-11100, #1820200)
 
