@@ -8,7 +8,7 @@
 
 Name:           haproxy
 Version:        2.2.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
 License:        GPLv2+
@@ -20,6 +20,8 @@ Source2:        %{name}.cfg
 Source3:        %{name}.logrotate
 Source4:        %{name}.sysconfig
 Source5:        halog.1
+
+Patch0:         haproxy-2.2.0-lua-5.4.patch
 
 BuildRequires:  gcc
 BuildRequires:  lua-devel
@@ -48,6 +50,7 @@ availability environments. Indeed, it can:
 
 %prep
 %setup -q
+%patch0 -p1 -b .lua54
 
 %build
 regparm_opts=
@@ -132,6 +135,9 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
+* Fri Jul 10 2020 Tom Callaway <spot@fedoraproject.org> - 2.2.0-2
+- fix build against lua 5.4
+
 * Thu Jul 09 2020 Ryan O'Hara <rohara@redhat.com> - 2.2.0-0
 - Update to 2.2.0 (#1854519)
 
