@@ -8,7 +8,7 @@
 
 Name:           haproxy
 Version:        2.2.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
 License:        GPLv2+
@@ -135,10 +135,13 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
-* Fri Jul 10 2020 Tom Callaway <spot@fedoraproject.org> - 2.2.0-2
-- fix build against lua 5.4
+* Wed Jul 15 2020 Ryan O'Hara <rohara@redhat.com> - 2.2.0-3
+- Update systemd service file
 
-* Thu Jul 09 2020 Ryan O'Hara <rohara@redhat.com> - 2.2.0-0
+* Fri Jul 10 2020 Tom Callaway <spot@fedoraproject.org> - 2.2.0-2
+- Fix build against lua 5.4
+
+* Thu Jul 09 2020 Ryan O'Hara <rohara@redhat.com> - 2.2.0-1
 - Update to 2.2.0 (#1854519)
 
 * Mon Jun 15 2020 Ryan O'Hara <rohara@redhat.com> - 2.1.7-1
