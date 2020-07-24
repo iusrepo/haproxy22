@@ -6,25 +6,30 @@
 
 %global _hardened_build 1
 
-Name:           haproxy
-Version:        2.2.0
-Release:        3%{?dist}
+%bcond_with lua
+
+Name:           haproxy22
+Version:        2.2.1
+Release:        1%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
 License:        GPLv2+
 
 URL:            http://www.haproxy.org/
 Source0:        %{url}/download/2.2/src/haproxy-%{version}.tar.gz
-Source1:        %{name}.service
-Source2:        %{name}.cfg
-Source3:        %{name}.logrotate
-Source4:        %{name}.sysconfig
+Source1:        haproxy.service
+Source2:        haproxy.cfg
+Source3:        haproxy.logrotate
+Source4:        haproxy.sysconfig
 Source5:        halog.1
 
 Patch0:         haproxy-2.2.0-lua-5.4.patch
 
 BuildRequires:  gcc
-BuildRequires:  lua-devel
+%if %{with lua}
+# src/hlua.c: "Requires Lua 5.3 or later."
+BuildRequires:  lua-devel >= 5.3
+%endif
 BuildRequires:  pcre2-devel
 BuildRequires:  zlib-devel
 BuildRequires:  openssl-devel
@@ -33,6 +38,10 @@ BuildRequires:  systemd
 
 Requires(pre):      shadow-utils
 %{?systemd_requires}
+
+Provides:       haproxy = %{version}-%{release}
+Provides:       haproxy%{?_isa} = %{version}-%{release}
+Conflicts:      haproxy < %{version}-%{release}
 
 %description
 HAProxy is a TCP/HTTP reverse proxy which is particularly suited for high
@@ -49,8 +58,10 @@ availability environments. Indeed, it can:
    intercepted from the application
 
 %prep
-%setup -q
+%setup -q -n haproxy-%{version}
+%if %{with lua}
 %patch0 -p1 -b .lua54
+%endif
 
 %build
 regparm_opts=
@@ -58,7 +69,23 @@ regparm_opts=
 regparm_opts="USE_REGPARM=1"
 %endif
 
-%{__make} %{?_smp_mflags} CPU="generic" TARGET="linux-glibc" USE_OPENSSL=1 USE_PCRE2=1 USE_ZLIB=1 USE_LUA=1 USE_CRYPT_H=1 USE_SYSTEMD=1 USE_LINUX_TPROXY=1 USE_GETADDRINFO=1 ${regparm_opts} ADDINC="%{optflags}" ADDLIB="%{__global_ldflags}" EXTRA_OBJS="contrib/prometheus-exporter/service-prometheus.o"
+%{__make} %{?_smp_mflags} \
+    CPU="generic" \
+    TARGET="linux-glibc" \
+    USE_OPENSSL=1 \
+    USE_PCRE2=1 \
+    USE_ZLIB=1 \
+%if %{with lua}
+    USE_LUA=1 \
+%endif
+    USE_CRYPT_H=1 \
+    USE_SYSTEMD=1 \
+    USE_LINUX_TPROXY=1 \
+    USE_GETADDRINFO=1 \
+    ${regparm_opts} \
+    ADDINC="%{optflags}" \
+    ADDLIB="%{__global_ldflags}" \
+    EXTRA_OBJS="contrib/prometheus-exporter/service-prometheus.o"
 
 pushd contrib/halog
 %{__make} ${halog} OPTIMIZE="%{optflags} %{build_ldflags}"
@@ -72,10 +99,10 @@ popd
 %{__make} install-bin DESTDIR=%{buildroot} PREFIX=%{_prefix} TARGET="linux2628"
 %{__make} install-man DESTDIR=%{buildroot} PREFIX=%{_prefix}
 
-%{__install} -p -D -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/%{name}.service
-%{__install} -p -D -m 0644 %{SOURCE2} %{buildroot}%{haproxy_confdir}/%{name}.cfg
-%{__install} -p -D -m 0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
-%{__install} -p -D -m 0644 %{SOURCE4} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
+%{__install} -p -D -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/haproxy.service
+%{__install} -p -D -m 0644 %{SOURCE2} %{buildroot}%{haproxy_confdir}/haproxy.cfg
+%{__install} -p -D -m 0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/logrotate.d/haproxy
+%{__install} -p -D -m 0644 %{SOURCE4} %{buildroot}%{_sysconfdir}/sysconfig/haproxy
 %{__install} -p -D -m 0644 %{SOURCE5} %{buildroot}%{_mandir}/man1/halog.1
 %{__install} -d -m 0755 %{buildroot}%{haproxy_homedir}
 %{__install} -d -m 0755 %{buildroot}%{haproxy_datadir}
@@ -109,13 +136,13 @@ getent passwd %{haproxy_user} >/dev/null || \
 exit 0
 
 %post
-%systemd_post %{name}.service
+%systemd_post haproxy.service
 
 %preun
-%systemd_preun %{name}.service
+%systemd_preun haproxy.service
 
 %postun
-%systemd_postun_with_restart %{name}.service
+%systemd_postun_with_restart haproxy.service
 
 %files
 %doc doc/* examples/*
@@ -125,16 +152,20 @@ exit 0
 %dir %{haproxy_confdir}
 %dir %{haproxy_datadir}
 %{haproxy_datadir}/*
-%config(noreplace) %{haproxy_confdir}/%{name}.cfg
-%config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
-%config(noreplace) %{_sysconfdir}/sysconfig/%{name}
-%{_unitdir}/%{name}.service
-%{_sbindir}/%{name}
+%config(noreplace) %{haproxy_confdir}/haproxy.cfg
+%config(noreplace) %{_sysconfdir}/logrotate.d/haproxy
+%config(noreplace) %{_sysconfdir}/sysconfig/haproxy
+%{_unitdir}/haproxy.service
+%{_sbindir}/haproxy
 %{_bindir}/halog
 %{_bindir}/iprange
 %{_mandir}/man1/*
 
 %changelog
+* Fri Jul 24 2020 Carl George <carl@george.computer> - 2.2.1-1
+- Latest upstream
+- Port from Fedora to IUS
+
 * Wed Jul 15 2020 Ryan O'Hara <rohara@redhat.com> - 2.2.0-3
 - Update systemd service file
 
