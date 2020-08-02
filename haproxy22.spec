@@ -9,7 +9,7 @@
 %bcond_with lua
 
 Name:           haproxy22
-Version:        2.2.1
+Version:        2.2.2
 Release:        1%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
@@ -162,6 +162,9 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
+* Sun Aug 02 2020 Carl George <carl@george.computer> - 2.2.2-1
+- Latest upstream
+
 * Fri Jul 24 2020 Carl George <carl@george.computer> - 2.2.1-1
 - Latest upstream
 - Port from Fedora to IUS
