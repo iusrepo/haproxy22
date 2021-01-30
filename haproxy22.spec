@@ -9,7 +9,7 @@
 %bcond_with lua
 
 Name:           haproxy22
-Version:        2.2.2
+Version:        2.2.8
 Release:        1%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
@@ -162,6 +162,9 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
+* Sat Jan 30 2021 Christian Boenning <christian@boenning.io> - 2.2.8-1
+- Latest upstream
+
 * Sun Aug 02 2020 Carl George <carl@george.computer> - 2.2.2-1
 - Latest upstream
 
