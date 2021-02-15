@@ -10,7 +10,7 @@
 
 Name:           haproxy22
 Version:        2.2.9
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
 License:        GPLv2+
@@ -23,12 +23,10 @@ Source3:        haproxy.logrotate
 Source4:        haproxy.sysconfig
 Source5:        halog.1
 
-Patch0:         haproxy-2.2.0-lua-5.4.patch
-
 BuildRequires:  gcc
 %if %{with lua}
 # src/hlua.c: "Requires Lua 5.3 or later."
-BuildRequires:  lua-devel >= 5.3
+BuildRequires:  lua53u-devel
 %endif
 BuildRequires:  pcre2-devel
 BuildRequires:  zlib-devel
@@ -59,9 +57,6 @@ availability environments. Indeed, it can:
 
 %prep
 %setup -q -n haproxy-%{version}
-%if %{with lua}
-%patch0 -p1 -b .lua54
-%endif
 
 %build
 regparm_opts=
@@ -77,6 +72,10 @@ regparm_opts="USE_REGPARM=1"
     USE_ZLIB=1 \
 %if %{with lua}
     USE_LUA=1 \
+%if %{defined rhel}
+    LUA_LIB_NAME=lua-5.3 \
+    LUA_INC=%{_includedir}/lua-5.3 \
+%endif
 %endif
     USE_CRYPT_H=1 \
     USE_SYSTEMD=1 \
@@ -111,7 +110,7 @@ popd
 %{__install} -p -m 0755 ./contrib/iprange/iprange %{buildroot}%{_bindir}/iprange
 %{__install} -p -m 0644 ./examples/errorfiles/* %{buildroot}%{haproxy_datadir}
 
-for httpfile in $(find ./examples/errorfiles/ -type f) 
+for httpfile in $(find ./examples/errorfiles/ -type f)
 do
     %{__install} -p -m 0644 $httpfile %{buildroot}%{haproxy_datadir}
 done
@@ -162,6 +161,9 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
+* Mon Feb 15 2021 Christian Boenning <christian@boenning.io> - 2.2.9-2
+- Fix Lua Integration
+
 * Mon Feb  8 2021 Jeff Sheltren <jeff@tag1consulting.com> - 2.2.9-1
 - Latest upstream
 
@@ -589,7 +591,7 @@ exit 0
 - remove upstream patches, they are now part of source distribution
 
 * Sat Nov 22 2008 Jeremy Hinegardner <jeremy at hinegardner dot org> - 1.3.15.6-2
-- apply upstream patches 
+- apply upstream patches
 
 * Sat Nov 15 2008 Jeremy Hinegardner <jeremy at hinegardner dot org> - 1.3.15.6-1
 - update to 1.3.15.6
