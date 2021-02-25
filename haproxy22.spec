@@ -21,6 +21,8 @@ Source3:        haproxy.logrotate
 Source4:        haproxy.sysconfig
 Source5:        halog.1
 
+Patch0:         h1-upgrade-2.2.9.patch
+
 BuildRequires:  gcc
 BuildRequires:  lua53u-devel
 BuildRequires:  pcre2-devel
@@ -52,6 +54,8 @@ availability environments. Indeed, it can:
 
 %prep
 %setup -q -n haproxy-%{version}
+
+%patch0 -p1
 
 %build
 regparm_opts=
