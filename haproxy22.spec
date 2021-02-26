@@ -8,7 +8,7 @@
 
 Name:           haproxy22
 Version:        2.2.9
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
 License:        GPLv2+
@@ -156,6 +156,9 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
+* Fri Feb 26 2021 Jeff Sheltren <jeff@tag1consulting.com> - 2.2.9-3
+- Add message parsing patch
+
 * Mon Feb 15 2021 Christian Boenning <christian@boenning.io> - 2.2.9-2
 - Fix Lua Integration
 
