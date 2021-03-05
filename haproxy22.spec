@@ -7,8 +7,8 @@
 %global _hardened_build 1
 
 Name:           haproxy22
-Version:        2.2.9
-Release:        3%{?dist}
+Version:        2.2.10
+Release:        1%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
 License:        GPLv2+
@@ -20,8 +20,6 @@ Source2:        haproxy.cfg
 Source3:        haproxy.logrotate
 Source4:        haproxy.sysconfig
 Source5:        halog.1
-
-Patch0:         h1-upgrade-2.2.9.patch
 
 BuildRequires:  gcc
 BuildRequires:  lua53u-devel
@@ -54,8 +52,6 @@ availability environments. Indeed, it can:
 
 %prep
 %setup -q -n haproxy-%{version}
-
-%patch0 -p1
 
 %build
 regparm_opts=
@@ -156,6 +152,9 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
+* Fri Mar  5 2021 Christian Boenning <christian@boenning.io> - 2.2.10-1
+- Upstream HAProxy 2.2.10
+
 * Fri Feb 26 2021 Jeff Sheltren <jeff@tag1consulting.com> - 2.2.9-3
 - Add message parsing patch
 
