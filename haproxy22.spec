@@ -7,7 +7,7 @@
 %global _hardened_build 1
 
 Name:           haproxy22
-Version:        2.2.10
+Version:        2.2.15
 Release:        1%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
@@ -152,6 +152,9 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
+* Thu Aug  5 2021 Christian Boenning <christian@boenning.io> - 2.2.15-1
+- Upstream HAProxy 2.2.15
+
 * Fri Mar  5 2021 Christian Boenning <christian@boenning.io> - 2.2.10-1
 - Upstream HAProxy 2.2.10
 
