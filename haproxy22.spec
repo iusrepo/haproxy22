@@ -7,7 +7,7 @@
 %global _hardened_build 1
 
 Name:           haproxy22
-Version:        2.2.10
+Version:        2.2.15
 Release:        1%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
@@ -25,7 +25,7 @@ BuildRequires:  gcc
 BuildRequires:  lua53u-devel
 BuildRequires:  pcre2-devel
 BuildRequires:  zlib-devel
-BuildRequires:  openssl-devel
+BuildRequires:  openssl11-devel
 BuildRequires:  systemd-devel
 BuildRequires:  systemd
 
@@ -63,6 +63,8 @@ regparm_opts="USE_REGPARM=1"
     CPU="generic" \
     TARGET="linux-glibc" \
     USE_OPENSSL=1 \
+    SSL_LIB="$(pkg-config --libs-only-L openssl11 | sed -e 's/^-L//')" \
+    SSL_INC="$(pkg-config --cflags-only-I openssl11 | sed -e 's/^-I//')" \
     USE_PCRE2=1 \
     USE_ZLIB=1 \
     USE_LUA=1 \
@@ -152,6 +154,10 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
+* Thu Aug  5 2021 Christian Boenning <christian@boenning.io> - 2.2.15-1
+- Upstream HAProxy 2.2.15
+- Build against OpenSSL 1.1.1
+
 * Fri Mar  5 2021 Christian Boenning <christian@boenning.io> - 2.2.10-1
 - Upstream HAProxy 2.2.10
 
