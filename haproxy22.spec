@@ -8,7 +8,7 @@
 
 Name:           haproxy22
 Version:        2.2.17
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
 License:        GPLv2+
@@ -74,6 +74,7 @@ regparm_opts="USE_REGPARM=1"
     USE_SYSTEMD=1 \
     USE_LINUX_TPROXY=1 \
     USE_GETADDRINFO=1 \
+    DEFINE=-DMAX_SESS_STKCTR=12 \
     ${regparm_opts} \
     ADDINC="%{optflags}" \
     ADDLIB="%{__global_ldflags}" \
@@ -154,6 +155,9 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
+* Mon Oct  4 2021 Matt Rafferty <mjrafferty0@gmail.com> - 2.2.17-2
+- Increase available sticky counters
+
 * Wed Sep  8 2021 Jeff Sheltren <jeff@tag1consulting.com> - 2.2.17-1
 - Latest upstream
 
