@@ -7,8 +7,8 @@
 %global _hardened_build 1
 
 Name:           haproxy22
-Version:        2.2.17
-Release:        2%{?dist}
+Version:        2.2.18
+Release:        1%{?dist}
 Summary:        HAProxy reverse proxy for high availability environments
 
 License:        GPLv2+
@@ -155,6 +155,9 @@ exit 0
 %{_mandir}/man1/*
 
 %changelog
+* Thu Nov 18 2021 Jeff Sheltren <jeff@tag1consulting.com> - 2.2.18-1
+- Latest upstream
+
 * Mon Oct  4 2021 Matt Rafferty <mjrafferty0@gmail.com> - 2.2.17-2
 - Increase available sticky counters
 
